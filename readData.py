@@ -3,11 +3,13 @@ import numpy.linalg as LA
 import networkx as nx
 import datetime
 import pickle 
+import scipy as sp
+import scipy.sparse.linalg as sLA
 
 
-def readData(data_dir, filename):
+def preprocess(data_dir, filename):
     '''
-    read data, build dictionary, store into numpy ndarray, and save as pickle format for serielization
+    read data, build dictionary, store into numpy ndarray, and save as pickle format for data serialization
     '''
     infile = open(data_dir+filename,'r') 
     infile.readline()
@@ -35,16 +37,25 @@ def readData(data_dir, filename):
             G2.add_edge(user_index,item_index,weight=float(rating))  
             G1.add_edge(user_index,item_index,weight=0.0)
     infile.close()
-    return G1, G2
-    
+    M1 = np.array(nx.to_numpy_matrix(G1)) 
+    M2 = np.array(nx.to_numpy_matrix(G2)) 
+    #dumpPickle(data_dir, M1, M2)
+    return M1, M2
 
-def  
 
-    
+def dumpPickle(data_dir, M1, M2):
+    pickle.dump(M1, open('M1.pkl','wb'))
+    pickle.dump(M2, open('M2.pkl','wb'))  
+ 
+
+def loadPickle(data_dir):
+    M1 = pickle.load(open('M1.pkl','rb'))
+    M2 = pickle.load(open('M2.pkl','rb'))
+    return M1, M2
 
 
 
 if __name__ == '__main__':
-    data_dir = 'datasets/'
-    filename = 'Amazon/ratings_Movies_and_TV.csv'
-    readData(data_dir,filename)
+    data_dir = 'datasets/Amazon/'
+    filename = 'ratings_Movies_and_TV.csv'
+    preprocess(data_dir,filename)
