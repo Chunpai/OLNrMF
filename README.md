@@ -1,8 +1,9 @@
-To do list:
+### To do list: 
+ 
 1. data collection and preprocessing 
-    1.a) collect datasets with various sizes such 1000 nodes, 10000 nodes, and 100000 nodes
-    1.b) convert network datasets to adjacency matrices format
-    1.c) store matrices in a text file 
+    *a) collect datasets with various sizes such 1000 nodes, 10000 nodes, and 100000 nodes   
+    *b) convert network datasets to adjacency matrices format   
+    *c) store matrices in a text file   
 2. test of baselines on dynamic network first    
 3. test of baselines on dynamic network with stochastic representation    
 4. try to apply online convex optimizaiton    
@@ -11,13 +12,13 @@ To do list:
 7. Online method and anomaly prediction    
 
 
-Descriptions:
+### Descriptions:
 1. nrmf.py        - implementation of NrMF 
 2. olnrmf.py      - new    
 3. readData.py    - read data, store data into numpy ndarray, and seriealization
 
 
-Datasets:
+### Datasets:
 1. http://jmcauley.ucsd.edu/data/amazon/
 2. Temporal Directed Datasets from Stanford Large-scale Network Datasets 
 3. Datasets from Kaggle Competition  
