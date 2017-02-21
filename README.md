@@ -1,11 +1,14 @@
 To do list:
-1. data collection and preprocessing
-2. test of baselines on dynamic network first
-3. test of baselines on dynamic network with stochastic representation
-4. try to apply online convex optimizaiton
-5. implement online SVD 
-6. add l-1 norm constraint on SVD 
-7. Online method and anomaly prediction
+1. data collection and preprocessing 
+    1.a) collect datasets with various sizes such 1000 nodes, 10000 nodes, and 100000 nodes
+    1.b) convert network datasets to adjacency matrices format
+    1.c) store matrices in a text file 
+2. test of baselines on dynamic network first    
+3. test of baselines on dynamic network with stochastic representation    
+4. try to apply online convex optimizaiton    
+5. implement online SVD     
+6. add l-1 norm constraint on SVD    
+7. Online method and anomaly prediction    
 
 
 Descriptions:
