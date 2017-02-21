@@ -1,6 +1,6 @@
 ### To do list: 
  
-1. data collection and preprocessing 
+1. data collection and preprocessing     
     *a) collect datasets with various sizes such 1000 nodes, 10000 nodes, and 100000 nodes   
     *b) convert network datasets to adjacency matrices format   
     *c) store matrices in a text file   
