@@ -29,15 +29,18 @@ def dataFormat():
 def scaleFreeNetwork(n,m,size):
     G = nx.barabasi_albert_graph(n,m)
     G = injectAnomalies(G,size) 
-    outfile = open('../datasets/synthetic20.csv','w')
+    outfile = open('../datasets/synthetic'+str(m)+'.csv','w')
     for (source,target) in G.edges():
         outfile.write(str(source)+';'+str(target)+'\n')
+        if source > target:
+            print 'hahahahahahahahahahahaha'
     outfile.close()
+
 
 def injectAnomalies(G,size):
     n = G.number_of_nodes()
-    ground_truth_file = open('../datasets/synth20_ground.csv','w')
-    while(size>0):
+    ground_truth_file = open('../datasets/synth'+str(m)+'_ground.csv','w')
+    while(size>=0):
         source = random.randint(0,n)
         target = random.randint(0,n)
         if source != target and (source,target) not in G.edges():
@@ -57,7 +60,8 @@ def toMatrix(data_dir, filename):
     nodes_dict = {}
     for line in infile:
         fields = line.strip().split(';')
-        [source,target] = fields
+        source = int(fields[0])
+        target = int(fields[1])
         if source not in nodes_dict:
             nodes_dict[source] = 1
         if target not in nodes_dict:
@@ -69,8 +73,6 @@ def toMatrix(data_dir, filename):
             M[source][target] = 1.0
     infile.close()
     return  M, nodes_dict
-
-
 
 
 

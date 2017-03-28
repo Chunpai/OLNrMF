@@ -4,9 +4,8 @@ import math
 import datetime
 import matplotlib.pyplot as plt
 import random
-import readData
 from copy import deepcopy
-
+import data
 
 
 def initialization(n,r,l):
@@ -23,22 +22,24 @@ def initialization(n,r,l):
 
 
 
-def AltQP_Inc(M1,n,r,l):
+def AltQP_Inc(M,n,r,l):
     """
     input: original n*l matrix A (here we use A_dict to represent matrix), and rank size r
     output: n*r matrix F, r*l matrix G, and an n*l matrix R
     """ 
     #R_dict =  movie_dict #residual matrix initialized as a dict due to sparsity
     F, G = initialization(n,r,l)
-    R = deepcopy(M1)
+    R = deepcopy(M)
     for k in range(r):
         f, g = RankOneApproximation(R,n,l)
         F[:,k] = f
         G[k,:] = g
-        for user_index in R:
-            for item_index in R[user_index]:
-                if R[user_index][item_index] > 0.0:
-                    R[user_index][item_index] -= f[user_index]*g[item_index]
+        for source in R:
+            for target in R[source]:
+                if R[source][target] > 0.0:
+                    R[source][target] -= f[source]*g[target]
+                elif R[source][target] == 0.0:
+                    print 'GET ZERO'
                 else:
                     print 'ERROR--------------------------------------------' 
     return F, G, R
@@ -46,8 +47,8 @@ def AltQP_Inc(M1,n,r,l):
 
 def RankOneApproximation(R,n,l):
     """
-    input: A_dict, the matrix needs to be factorized
-    output: a colunmn vector f (movie feature), and a row vector g (user feature)
+    input: R, the matrix needs to be factorized, which is stored as a dictionary
+    output: a colunmn vector f and a row vector g 
     """
     convergent = False
     #f = []
@@ -61,6 +62,7 @@ def RankOneApproximation(R,n,l):
     #g = np.array(g)
     f = np.random.rand(n)
     g = np.random.rand(l)
+
     print 'f',f
     print 'g',g
     iteration = 0
@@ -73,23 +75,23 @@ def RankOneApproximation(R,n,l):
         f = Update_f(R,g,n)  #note the order of parameters n and l
         print 'f updated'
         P = outer_prod(f,g)
-        for user_index in R:
-            for item_index in R[user_index]:
-                rating = R[user_index][item_index] 
+        for source in R:
+            for target in R[source]:
+                rating = R[source][target] 
                 if rating > 0.0:
-                    if user_index in P and item_index in P[user_index]:
-                        approx = P[user_index][item_index]
+                    if source in P and target in P[source]:
+                        approx = P[source][target]
                         print 'approx',approx
                         error = rating - approx
                         print 'error1',error
-                    else:
-                        error = rating
-                        print 'error2',error
-                    if error < 0.0:
+                    #else:     # we only consider the error with valid entries
+                    #    error = rating
+                    #    print 'error2',error
+                    if error < -0.00001:
                         print 'ERROR------------------------------------2'
                         print 'error3',error
                         print 'rating',rating
-                        print 'prod', P[user_index][item_index]
+                        print 'prod', P[source][target]
                         return
                     elif error == 0.0:
                         print 'Good-------------------------------------'
@@ -105,22 +107,25 @@ def RankOneApproximation(R,n,l):
 
 
 def Update_g(R,f,l):
-    g = np.zeros(l)
-    for j in range(l):
+    '''
+    f is the column vector and g is the row vector
+    '''
+    g = np.zeros(l)   
+    for j in range(l): #for element in the row vector
         low = float('-inf')
         up = float('inf')
         t = 0.0
         q = 0.0
-        for user_index in R:
-            f_value = f[user_index]
-            if j in R[user_index]:
-                if R[user_index][j] > 0.0:
-                    q = q + f_value * R[user_index][j]
-                    t = t + math.pow(f_value,2)
+        for source in R:   
+            f_value = f[source]
+            if j in R[source]:   
+                if R[source][j] > 0.0:
+                    q = q + f_value * R[source][j]
+                    t = t + math.pow(f_value,2)    #if f_value is 0
                     if f_value > 0:
-                        up = min(up, R[user_index][j] / f_value) 
+                        up  = min(up, R[source][j] / f_value) 
                     elif f_value < 0:
-                        low = max(low, R[user_index][j] / f_value)
+                        low = max(low, R[source][j] / f_value)
                     else:
                         continue
             else:
@@ -129,7 +134,7 @@ def Update_g(R,f,l):
             g[j] = 0.0 
             continue
         q = q / t
-        q = float("{0:.2f}".format(q))
+        #q = float("{0:.7f}".format(q))
         if q <= up and q >= low:
             g[j] = q
         elif q > up:
@@ -154,10 +159,10 @@ def Update_f(R,g,n):
                     t = t + math.pow(g_value,2)
                     if g_value > 0:
                         up = min(up, R[i][item_index] / g_value) 
-                        up = float("{0:.2f}".format(up))
+                        #up = float("{0:.7f}".format(up))
                     elif g_value < 0:
                         low = max(low, R[i][item_index] / g_value)
-                        low = float("{0:.2f}".format(low))
+                        #low = float("{0:.7f}".format(low))
                     else:
                         continue
         if t == 0:
@@ -190,15 +195,16 @@ def outer_prod(f,g):
 def plotResult(R,n,l):
     plt.axis([0,l+1,0,n+1])
     count = 0
-    for user_index in R:
-        user_list = []
-        item_list = []
-        for item_index in R[user_index]:
-            if R[user_index][item_index] > 0.0000:
+    for source in R:
+        source_list = []
+        target_list = []
+        for target in R[source]:
+            if R[source][target] > 0.0000:
                 count += 1
-                user_list.append(user_index)
-                item_list.append(item_index)
-        plt.plot(user_list, item_list, 'b.')
+                source_list.append(source)
+                target_list.append(target)
+        if source > 900:
+            plt.plot(source_list, target_list, 'b.')
     plt.savefig('anomaly.png')
     print count
 
@@ -209,14 +215,18 @@ if __name__ == "__main__":
     #data_dir = 'datasets/Amazon/top1000/'
     #filename = 'ratings.csv'
     #M1, M2 ,user_dict, item_dict = readData.loadPickle(data_dir)
-    data_dir = 'datasets/'
+    data_dir = '../datasets/'
     filename = 'synthetic5.csv'
     
     M,nodes_dict = data.toMatrix(data_dir, filename)
+
     n = len(nodes_dict)
-    r = 1
-    AltQP_Inc(M,n,r,n)
-    
+    plotResult(M,n,n) 
 
+    print len(M)
+    print nodes_dict
 
+    r = 9
+    F,G,R = AltQP_Inc(M,n,r,n)
 
+    print M
