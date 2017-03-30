@@ -203,8 +203,7 @@ def plotResult(R,n,l):
                 count += 1
                 source_list.append(source)
                 target_list.append(target)
-        if source > 900:
-            plt.plot(source_list, target_list, 'b.')
+        plt.plot(source_list, target_list, 'b.')
     plt.savefig('anomaly.png')
     print count
 
@@ -226,7 +225,7 @@ if __name__ == "__main__":
     print len(M)
     print nodes_dict
 
-    r = 9
+    r = 3
     F,G,R = AltQP_Inc(M,n,r,n)
 
     print M
