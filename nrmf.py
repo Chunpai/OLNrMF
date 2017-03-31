@@ -41,7 +41,7 @@ def AltQP_Inc(M,n,r,l):
                 elif R[source][target] == 0.0:
                     print 'GET ZERO'
                 else:
-                    print 'ERROR--------------------------------------------' 
+                    print 'Floating ERROR--------------------------------------------' 
     return F, G, R
    
 
@@ -84,9 +84,9 @@ def RankOneApproximation(R,n,l):
                         print 'approx',approx
                         error = rating - approx
                         print 'error1',error
-                    #else:     # we only consider the error with valid entries
-                    #    error = rating
-                    #    print 'error2',error
+                    else:     
+                        error = rating
+                        print 'error2',error
                     if error < -0.00001:
                         print 'ERROR------------------------------------2'
                         print 'error3',error
@@ -192,20 +192,21 @@ def outer_prod(f,g):
              
 
 
-def plotResult(R,n,l):
-    plt.axis([0,l+1,0,n+1])
+def plotResult(R,n,l,name):
+    plt.axis([0,n+1,0,l+1])
     count = 0
     for source in R:
         source_list = []
         target_list = []
         for target in R[source]:
-            if R[source][target] > 0.0000:
+            if R[source][target] > 0.00000001:
                 count += 1
                 source_list.append(source)
                 target_list.append(target)
-        plt.plot(source_list, target_list, 'b.')
-    plt.savefig('anomaly.png')
-    print count
+            elif R[source][target] < 0.0:
+                print R[source][target]
+        plt.plot(source_list, target_list, 'b.', markersize=0.5)
+    plt.savefig(name)
 
 
 
@@ -214,18 +215,19 @@ if __name__ == "__main__":
     #data_dir = 'datasets/Amazon/top1000/'
     #filename = 'ratings.csv'
     #M1, M2 ,user_dict, item_dict = readData.loadPickle(data_dir)
-    data_dir = '../datasets/'
-    filename = 'synthetic5.csv'
+    data_dir = 'datasets/'
+    filename = 'ml_ratings_100.csv'
     
-    M,nodes_dict = data.toMatrix(data_dir, filename)
+    M,source_dict,target_dict = data.toMatrix(data_dir, filename)
+    n = len(source_dict)
+    l = len(target_dict)
+    r = 9
+    for source in M:
+        print source
+    F,G,R = AltQP_Inc(M,n,r,l)
+    
+    #G, ground_nodes_dict = data.toMatrix('../datasets/','synth5_ground.csv')
+    #plotResult(M,n,l,'whole.png')  
+    plotResult(R,n,l,'detected9.png') 
 
-    n = len(nodes_dict)
-    plotResult(M,n,n) 
-
-    print len(M)
-    print nodes_dict
-
-    r = 3
-    F,G,R = AltQP_Inc(M,n,r,n)
-
-    print M
+    #plotResult(G,n,l,'ground.png')
