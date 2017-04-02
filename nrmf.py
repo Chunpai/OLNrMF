@@ -81,17 +81,17 @@ def RankOneApproximation(R,n,l):
                 if rating > 0.0:
                     if source in P and target in P[source]:
                         approx = P[source][target]
-                        print 'approx',approx
+                        #print 'approx',approx
                         error = rating - approx
-                        print 'error1',error
+                        #print 'error1',error
                     else:     
                         error = rating
-                        print 'error2',error
-                    if error < -0.00001:
+                        #print 'error2',error
+                    if error < -0.0001:
                         print 'ERROR------------------------------------2'
-                        print 'error3',error
-                        print 'rating',rating
-                        print 'prod', P[source][target]
+                        #print 'error3',error
+                        #print 'rating',rating
+                        #print 'prod', P[source][target]
                         return
                     elif error == 0.0:
                         print 'Good-------------------------------------'
@@ -192,21 +192,37 @@ def outer_prod(f,g):
              
 
 
-def plotResult(R,n,l,name):
+def plotResidual(data_dir,R,anomaly,n,r,l):
     plt.axis([0,n+1,0,l+1])
     count = 0
+    acount = 0
+    outfile = open(data_dir+'residuals2/R'+str(r)+'.csv','w')
+    outfile2 = open(data_dir+'result2.csv','a')
     for source in R:
         source_list = []
         target_list = []
+        anomaly_source_list = []
+        anomaly_target_list = []
         for target in R[source]:
-            if R[source][target] > 0.00000001:
+            if R[source][target] > 0.00001:
                 count += 1
                 source_list.append(source)
                 target_list.append(target)
-            elif R[source][target] < 0.0:
-                print R[source][target]
+                outfile.write(str(source)+';'+str(target)+'\n')
+                if source in anomaly:
+                    if target in anomaly[source]:
+                        acount += 1
+                        anomaly_source_list.append(source)
+                        anomaly_target_list.append(target)
         plt.plot(source_list, target_list, 'b.', markersize=0.5)
-    plt.savefig(name)
+        plt.plot(anomaly_source_list, anomaly_target_list, 'r.', markersize=0.5)
+    outfile.close()
+    plt.savefig(data_dir+'residuals2/R'+str(r)+'.png')
+    outfile2.write(str(r)+';'+str(count)+';'+str(acount)+'\n')
+    outfile2.close()
+    print r
+    print count
+    print acount
 
 
 
@@ -215,19 +231,17 @@ if __name__ == "__main__":
     #data_dir = 'datasets/Amazon/top1000/'
     #filename = 'ratings.csv'
     #M1, M2 ,user_dict, item_dict = readData.loadPickle(data_dir)
-    data_dir = 'datasets/'
-    filename = 'ml_ratings_100.csv'
+    data_dir = 'datasets/100_ml_ratings/'
+    network = '100_ml_ratings.csv'
     
-    M,source_dict,target_dict = data.toMatrix(data_dir, filename)
+    M, count, source_dict,target_dict = data.readNetwork(data_dir, network)
     n = len(source_dict)
     l = len(target_dict)
-    r = 9
-    for source in M:
-        print source
-    F,G,R = AltQP_Inc(M,n,r,l)
+    injected_M, anomaly, acount = data.injectAnomalies(data_dir, M)
+    r = 7
+    F,G,R = AltQP_Inc(injected_M,n,r,l)
     
     #G, ground_nodes_dict = data.toMatrix('../datasets/','synth5_ground.csv')
-    #plotResult(M,n,l,'whole.png')  
-    plotResult(R,n,l,'detected9.png') 
-
-    #plotResult(G,n,l,'ground.png')
+    #plotResult(M,n,r,l,'whole.png')  
+    plotResidual(data_dir,R,anomaly,n,r,l) 
+    #plotResult(G,n,r,l,'ground.png')

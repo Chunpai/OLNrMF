@@ -1,19 +1,19 @@
 import numpy as np
 import networkx as nx
 import random
+import matplotlib.pyplot as plt
+from copy import deepcopy
 
-def randomGraph(n,p):
-    G = nx.Graph()
-    outfile = open('datasets/synthetic1.csv','w')
-    for i in range(n):
-        for j in range(n):
-            if i != j:
-                val = random.uniform(0,1)
-                if val <= p:
-                    outfile.write(str(i)+' '+str(j)+'\n')
-                    G.add_edge(i,j) 
+def scaleFreeNetwork(n,m,size,name):
+    G = nx.barabasi_albert_graph(n,m)
+    G = injectAnomalies(G,size,name) 
+    outfile = open('datasets/'+name+'.csv','w')
+    for (source,target) in G.edges():
+        outfile.write(str(source)+';'+str(target)+'\n')
+        if source > target:
+            print 'hahahahahahahahahahahaha'
     outfile.close()
-    return G 
+
 
 def dataFormat1():
     infile = open('datasets/cit-HepPh.txt','r')
@@ -60,39 +60,44 @@ def dataFormat2():
     outfile.close()
 
 
-def scaleFreeNetwork(n,m,size,name):
-    G = nx.barabasi_albert_graph(n,m)
-    G = injectAnomalies(G,size,name) 
-    outfile = open('datasets/'+name+'.csv','w')
-    for (source,target) in G.edges():
-        outfile.write(str(source)+';'+str(target)+'\n')
-        if source > target:
-            print 'hahahahahahahahahahahaha'
+def generateAnomalies_1(M,source_dict,target_dict,data_dir):
+    outfile = open(data_dir+'ground_truth1.csv','w')
+    count = 0
+    for i in range(2):
+        anomaly_source = random.choice(source_dict.keys())
+        target_size = len(target_dict)
+        for j in range(target_size/2): 
+            anomaly_target = random.choice(target_dict.keys())
+            if anomaly_target not in M[anomaly_source]:
+                count += 1
+                outfile.write(str(anomaly_source)+';'+str(anomaly_target)+'\n')
     outfile.close()
+    print 'anomaly edges',count
+    return count
 
 
-def injectAnomalies(G,size,name):
-    n = G.number_of_nodes()
-    ground_truth_file = open('datasets/'+name+'_ground.csv','w')
-    while(size>=0):
-        source = random.randint(0,n)
-        target = random.randint(0,n)
-        if source != target and (source,target) not in G.edges():
-            G.add_edge(source,target) 
-            ground_truth_file.write(str(source)+';'+str(target)+'\n')
-            size -= 1
-    ground_truth_file.close()
-    return G 
+def generateAnomalies_2(M,source_dict,target_dict,data_dir):
+    outfile = open(data_dir+'ground_truth2.csv','w')
+    count = 0
+    for i in range(10):
+        anomaly_target = random.choice(target_dict.keys())
+        source_size = len(source_dict)
+        for j in range(source_size*3): 
+            anomaly_source = random.choice(source_dict.keys())
+            if anomaly_target not in M[anomaly_source]:
+                count += 1
+                outfile.write(str(anomaly_source)+';'+str(anomaly_target)+'\n')
+    outfile.close()
+    print 'anomaly edges',count
+    return count
 
 
-def toMatrix(data_dir, filename):
-    '''
-    read data, build dictionary, store into numpy ndarray, and save as pickle format for data serialization
-    '''
+def readNetwork(data_dir, filename):
     infile = open(data_dir+filename,'r') 
     M = {}
     source_dict = {}
     target_dict = {}
+    count = 0
     for line in infile:
         fields = line.strip().split(';')
         source = int(fields[0])
@@ -102,27 +107,82 @@ def toMatrix(data_dir, filename):
         if target not in target_dict:
             target_dict[target] = 1
         if source not in M:
+            count += 1
             M[source] = {}
             M[source][target] = 1.0
         else:
+            count += 1
             M[source][target] = 1.0
-        '''    
-        if target not in M:
-            M[target] = {}
-            M[target][source] = 1.0
-        else:
-            M[target][source] = 1.0
-        '''
     infile.close()
+    print 'total edges',count
     print 'source',len(source_dict)
     print 'target',len(target_dict)
-    return  M, source_dict, target_dict
+    return  M, count, source_dict, target_dict
+
+
+def injectAnomalies(data_dir, M):
+    infile = open(data_dir + 'ground_truth2.csv','r')
+    injected_M = deepcopy(M)
+    anomaly = {}
+    count = 0
+    for line in infile:
+        fields = line.strip().split(';')
+        source = int(fields[0])
+        target = int(fields[1])
+        if source not in anomaly:
+            anomaly[source] = {}
+            anomaly[source][target] = 1.0
+        else:
+            anomaly[source][target] = 1.0
+        if source not in injected_M:
+            count += 1
+            injected_M[source] = {}
+            injected_M[source][target] = 1.0
+        else:
+            count += 1
+            injected_M[source][target] = 1.0
+    infile.close()
+    print 'anomaly edges:',count
+    return  injected_M, anomaly, count
+
+
+def plotNetwork(data_dir,M,anomaly,n,l):
+    plt.axis([0,n+1,0,l+1])
+    plt.xlabel('user')
+    plt.ylabel('movie')
+    count = 0
+    for source in M:
+        source_list = []
+        target_list = []
+        for target in M[source]:
+            count += 1
+            source_list.append(source)
+            target_list.append(target)
+        plt.plot(source_list, target_list, 'b.', markersize=0.5 )
+    print 'total edges in M',count
+    for source in anomaly:
+        source_list = []
+        target_list = []
+        for target in anomaly[source]:
+            source_list.append(source)
+            target_list.append(target)
+        plt.plot(source_list, target_list, 'r.', markersize=1.0)
+    plt.savefig(data_dir+'injected_M.png')
+
+ 
+
 
 
 
 if __name__ == '__main__':
-    #n = 1000
-    #m = 20
-    #size = 100
-    #scaleFreeNetwork(n,m,size,'synthetic_100')
-    dataFormat2()
+    data_dir = 'datasets/100_ml_ratings/'
+    filename = '100_ml_ratings.csv' 
+    M, count, source_dict, target_dict = readNetwork(data_dir,filename)
+    n = len(source_dict)
+    l = len(target_dict)
+    #generateAnomalies_2(M,source_dict,target_dict,data_dir)
+    injected_M, anomaly, acount = injectAnomalies(data_dir, M)
+    plotNetwork(data_dir,M,anomaly,n,l)
+    #outfile = open(data_dir+'result2.csv','w')
+    #outfile.write(str(count)+';'+str(acount)+'\n')
+    #outfile.close()
