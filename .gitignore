@@ -1,3 +1,5 @@
 /backup
 /results
-/datasets
+/datasets/cit_hepPh       
+/datasets/ml-latest-small
+/datasets/synthetic
