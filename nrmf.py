@@ -38,10 +38,10 @@ def AltQP_Inc(M,n,r,l):
             for target in R[source]:
                 if R[source][target] > 0.0:
                     R[source][target] -= f[source]*g[target]
-                elif R[source][target] == 0.0:
-                    print 'GET ZERO'
-                else:
-                    print 'Floating ERROR--------------------------------------------' 
+                #elif R[source][target] == 0.0:
+                #    print 'GET ZERO'
+                #else:
+                #    print 'Floating ERROR--------------------------------------------' 
     return F, G, R
    
 
@@ -63,17 +63,17 @@ def RankOneApproximation(R,n,l):
     f = np.random.rand(n)
     g = np.random.rand(l)
 
-    print 'f',f
-    print 'g',g
+    #print 'f',f
+    #print 'g',g
     iteration = 0
     while convergent == False:
         total_error = 0.0
         iteration += 1
-        print 'ITERATION',iteration
+        #print 'ITERATION',iteration
         g = Update_g(R,f,l)
-        print 'g updated'
+        #print 'g updated'
         f = Update_f(R,g,n)  #note the order of parameters n and l
-        print 'f updated'
+        #print 'f updated'
         P = outer_prod(f,g)
         for source in R:
             for target in R[source]:
@@ -93,16 +93,16 @@ def RankOneApproximation(R,n,l):
                         #print 'rating',rating
                         #print 'prod', P[source][target]
                         return
-                    elif error == 0.0:
-                        print 'Good-------------------------------------'
+                    #elif error == 0.0:
+                    #    print 'Good-------------------------------------'
                     else:
                         total_error += math.pow(error,2)
         total_error = math.sqrt(total_error)
         if total_error <= 1000.0 or iteration >= 100:
             convergent = True
-            print 'convergent-------------------------------------------'
-        else:
-            print 'total_error',total_error
+            #print 'convergent-------------------------------------------'
+        #else:
+        #    print 'total_error',total_error
     return f, g
 
 
@@ -225,9 +225,45 @@ def plotResidual(data_dir,R,anomaly,n,r,l):
     print acount
 
 
+def residualNetowrkAnalysis(injected_M,anomaly,n,rank,l):
+    '''
+    analysis of residual network after each rank-one approximation
+    '''
+    R = injected_M
+    for i in range(rank):
+        f,g,R = AltQP_Inc(R,n,1,l)
+        print 'iteration:',i
+        res_edges = 0
+        ano_edges = 0
+        res_nodes = {}
+        ano_nodes = {}
+        for source in R:
+            for target in R[source]:
+                if R[source][target] >= 0.00001:
+                    R[source][target] = 1.0
+                    res_edges += 1
+                    if source not in res_nodes:
+                        res_nodes[source] = 1
+                    if target not in res_nodes:
+                        res_nodes[target] = 1
 
+                    if source in anomaly:
+                        if target in anomaly[source]:
+                            ano_edges += 1
+                            if source not in ano_nodes:
+                                ano_nodes[source] = 1
+                            if target not in ano_nodes:
+                                ano_nodes[target] = 1
+                else:
+                    R[source][target] = 0.0
+        print 'residual edges:',res_edges
+        print 'residual nodes:',len(res_nodes)
+        print 'ratio:', res_edges*1.0/len(res_nodes)
+        print 'anomaly edges:',ano_edges
+        print 'anomaly nodes:',len(ano_nodes)
+        #print 'ratio:', ano_edges*1.0/len(ano_nodes)
 
-if __name__ == "__main__": 
+def test1():
     #data_dir = 'datasets/Amazon/top1000/'
     #filename = 'ratings.csv'
     #M1, M2 ,user_dict, item_dict = readData.loadPickle(data_dir)
@@ -238,10 +274,27 @@ if __name__ == "__main__":
     n = len(source_dict)
     l = len(target_dict)
     injected_M, anomaly, acount = data.injectAnomalies(data_dir, M)
-    r = 7
+    r = 10
     F,G,R = AltQP_Inc(injected_M,n,r,l)
     
     #G, ground_nodes_dict = data.toMatrix('../datasets/','synth5_ground.csv')
     #plotResult(M,n,r,l,'whole.png')  
     plotResidual(data_dir,R,anomaly,n,r,l) 
     #plotResult(G,n,r,l,'ground.png')
+
+def test2():
+    data_dir = 'datasets/100_ml_ratings/'
+    network = '100_ml_ratings.csv'
+    
+    M, count, source_dict,target_dict = data.readNetwork(data_dir, network)
+    n = len(source_dict)
+    l = len(target_dict)
+    injected_M, anomaly, acount = data.injectAnomalies(data_dir, M)
+    rank = 20
+    residualNetowrkAnalysis(injected_M,anomaly,n,rank,l)
+    
+   
+
+
+if __name__ == "__main__": 
+   test2() 
