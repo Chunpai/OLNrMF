@@ -225,7 +225,7 @@ def plotResidual(data_dir,R,anomaly,n,r,l):
     print acount
 
 
-def residualNetowrkAnalysis(injected_M,anomaly,n,rank,l):
+def residualNetowrkAnalysis(injected_M, anomaly, n, rank, l):
     '''
     analysis of residual network after each rank-one approximation
     '''
@@ -237,11 +237,15 @@ def residualNetowrkAnalysis(injected_M,anomaly,n,rank,l):
         ano_edges = 0
         res_nodes = {}
         ano_nodes = {}
+        res_matrix = np.zeros((n,l))
+        ano_matrix = np.zeros((n,l))
         for source in R:
             for target in R[source]:
                 if R[source][target] >= 0.00001:
                     R[source][target] = 1.0
                     res_edges += 1
+                    #res_matrix[source][target] = R[source][target]
+                    res_matrix[source][target] = 1.0
                     if source not in res_nodes:
                         res_nodes[source] = 1
                     if target not in res_nodes:
@@ -250,18 +254,25 @@ def residualNetowrkAnalysis(injected_M,anomaly,n,rank,l):
                     if source in anomaly:
                         if target in anomaly[source]:
                             ano_edges += 1
+                            #ano_matrix[source][target] = R[source][target]
+                            ano_matrix[source][target] = 1.0
                             if source not in ano_nodes:
                                 ano_nodes[source] = 1
                             if target not in ano_nodes:
                                 ano_nodes[target] = 1
                 else:
                     R[source][target] = 0.0
+
+        u1,s1,v1 = LA.svd(res_matrix)
+        u2,s2,v2 = LA.svd(ano_matrix)
         print 'residual edges:',res_edges
         print 'residual nodes:',len(res_nodes)
         print 'ratio:', res_edges*1.0/len(res_nodes)
         print 'anomaly edges:',ano_edges
         print 'anomaly nodes:',len(ano_nodes)
         #print 'ratio:', ano_edges*1.0/len(ano_nodes)
+        print 'residual eigenvalues', s1
+        print 'anomaly eigenvalues', s2
 
 def test1():
     #data_dir = 'datasets/Amazon/top1000/'
@@ -282,6 +293,7 @@ def test1():
     plotResidual(data_dir,R,anomaly,n,r,l) 
     #plotResult(G,n,r,l,'ground.png')
 
+
 def test2():
     data_dir = 'datasets/100_ml_ratings/'
     network = '100_ml_ratings.csv'
@@ -293,7 +305,8 @@ def test2():
     rank = 20
     residualNetowrkAnalysis(injected_M,anomaly,n,rank,l)
     
-   
+
+
 
 
 if __name__ == "__main__": 
