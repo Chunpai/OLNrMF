@@ -1,19 +1,8 @@
 import numpy as np
 import networkx as nx
 import random
-import matplotlib.pyplot as plt
+
 from copy import deepcopy
-
-def scaleFreeNetwork(n,m,size,name):
-    G = nx.barabasi_albert_graph(n,m)
-    G = injectAnomalies(G,size,name) 
-    outfile = open('datasets/'+name+'.csv','w')
-    for (source,target) in G.edges():
-        outfile.write(str(source)+';'+str(target)+'\n')
-        if source > target:
-            print 'hahahahahahahahahahahaha'
-    outfile.close()
-
 
 def dataFormat1():
     infile = open('datasets/cit-HepPh.txt','r')
@@ -27,6 +16,10 @@ def dataFormat1():
 
 
 def dataFormat2():
+    '''
+    extract first 100 user data from  movie_len dataset, and store the data
+    in preferred format 
+    '''
     infile = open('datasets/ml-latest-small/ratings_100.csv','r')
     outfile = open('datasets/ml_ratings_100.csv','w')
     infile.readline()
@@ -145,32 +138,6 @@ def injectAnomalies(data_dir, M):
     infile.close()
     print 'anomaly edges:',count
     return  injected_M, anomaly, count
-
-
-def plotNetwork(data_dir,M,anomaly,n,l):
-    plt.axis([0,n+1,0,l+1])
-    plt.xlabel('user')
-    plt.ylabel('movie')
-    count = 0
-    for source in M:
-        source_list = []
-        target_list = []
-        for target in M[source]:
-            count += 1
-            source_list.append(source)
-            target_list.append(target)
-        plt.plot(source_list, target_list, 'b.', markersize=0.5 )
-    print 'total edges in M',count
-    for source in anomaly:
-        source_list = []
-        target_list = []
-        for target in anomaly[source]:
-            source_list.append(source)
-            target_list.append(target)
-        plt.plot(source_list, target_list, 'r.', markersize=1.0)
-    plt.savefig(data_dir+'injected_M.png')
-
- 
 
 
 
