@@ -225,13 +225,14 @@ def plotResidual(data_dir,R,anomaly,n,r,l):
     print acount
 
 
-def residualNetowrkAnalysis(injected_M, anomaly, n, rank, l):
+def residualNetowrkAnalysis(data_dir,injected_M, anomaly, n, rank, l, total_edges):
     '''
     analysis of residual network after each rank-one approximation
     '''
+    outfile = open(data_dir+'result2.csv','a')
+    outfile.write('rank;residual_edges;largest_res_eigval;ano_edges;largest_ano_eigval\n')
     R = injected_M
     for i in range(rank):
-        f,g,R = AltQP_Inc(R,n,1,l)
         print 'iteration:',i
         res_edges = 0
         ano_edges = 0
@@ -241,38 +242,28 @@ def residualNetowrkAnalysis(injected_M, anomaly, n, rank, l):
         ano_matrix = np.zeros((n,l))
         for source in R:
             for target in R[source]:
-                if R[source][target] >= 0.00001:
+                if R[source][target] >= 0.000001:
                     R[source][target] = 1.0
                     res_edges += 1
-                    #res_matrix[source][target] = R[source][target]
-                    res_matrix[source][target] = 1.0
-                    if source not in res_nodes:
-                        res_nodes[source] = 1
-                    if target not in res_nodes:
-                        res_nodes[target] = 1
-
+                    res_matrix[source][target] = R[source][target]
+                    #res_matrix[source][target] = 1.0
                     if source in anomaly:
                         if target in anomaly[source]:
                             ano_edges += 1
-                            #ano_matrix[source][target] = R[source][target]
-                            ano_matrix[source][target] = 1.0
-                            if source not in ano_nodes:
-                                ano_nodes[source] = 1
-                            if target not in ano_nodes:
-                                ano_nodes[target] = 1
-                else:
-                    R[source][target] = 0.0
-
+                            ano_matrix[source][target] = R[source][target]
+                            #ano_matrix[source][target] = 1.0
         u1,s1,v1 = LA.svd(res_matrix)
         u2,s2,v2 = LA.svd(ano_matrix)
         print 'residual edges:',res_edges
-        print 'residual nodes:',len(res_nodes)
-        print 'ratio:', res_edges*1.0/len(res_nodes)
         print 'anomaly edges:',ano_edges
-        print 'anomaly nodes:',len(ano_nodes)
-        #print 'ratio:', ano_edges*1.0/len(ano_nodes)
         print 'residual eigenvalues', s1
         print 'anomaly eigenvalues', s2
+        largest_res_eigval = s1[0]
+        largest_ano_eigval = s2[0]
+        outfile.write('{0};{1};{2};{3};{4}\n'.format(i,res_edges,largest_res_eigval,ano_edges,largest_ano_eigval))
+        f,g,R = AltQP_Inc(R,n,1,l)
+    outfile.close()
+
 
 def test1():
     #data_dir = 'datasets/Amazon/top1000/'
@@ -294,6 +285,7 @@ def test1():
     #plotResult(G,n,r,l,'ground.png')
 
 
+
 def test2():
     data_dir = 'datasets/100_ml_ratings/'
     network = '100_ml_ratings.csv'
@@ -302,12 +294,10 @@ def test2():
     n = len(source_dict)
     l = len(target_dict)
     injected_M, anomaly, acount = data.injectAnomalies(data_dir, M)
-    rank = 20
-    residualNetowrkAnalysis(injected_M,anomaly,n,rank,l)
+    rank = 21
+    residualNetowrkAnalysis(data_dir,injected_M,anomaly,n,rank,l, count)
     
 
 
-
-
 if __name__ == "__main__": 
-   test2() 
+    test2() 

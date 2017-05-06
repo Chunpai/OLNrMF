@@ -114,9 +114,9 @@ def readNetwork(data_dir, filename):
             count += 1
             M[source][target] = 1.0
     infile.close()
-    print 'total edges',count
-    print 'source',len(source_dict)
-    print 'target',len(target_dict)
+    print 'total edges', count
+    print 'source', len(source_dict)
+    print 'target', len(target_dict)
     return  M, count, source_dict, target_dict
 
 
@@ -139,8 +139,9 @@ def injectAnomalies(data_dir, M):
             injected_M[source] = {}
             injected_M[source][target] = 1.0
         else:
-            count += 1
-            injected_M[source][target] = 1.0
+            if target not in injected_M[source]:
+                count += 1
+                injected_M[source][target] = 1.0
     infile.close()
     print 'anomaly edges:',count
     return  injected_M, anomaly, count
