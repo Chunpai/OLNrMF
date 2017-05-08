@@ -12,34 +12,12 @@ import plot
 import test1
 import nrmf
 import numpy.linalg as LA
-
-def matrix_factorization(R, P, Q, K, steps=5000, alpha=0.0002, beta=0.02):
-    Q = Q.T
-    for step in xrange(steps):
-        for i in xrange(len(R)):
-            for j in xrange(len(R[i])):
-                if R[i][j] > 0:
-                    eij = R[i][j] - numpy.dot(P[i,:],Q[:,j])
-                    for k in xrange(K):
-                        P[i][k] = P[i][k] + alpha * (2 * eij * Q[k][j] - beta * P[i][k])
-                        Q[k][j] = Q[k][j] + alpha * (2 * eij * P[i][k] - beta * Q[k][j])
-        eR = numpy.dot(P,Q)
-        e = 0
-        for i in xrange(len(R)):
-            for j in xrange(len(R[i])):
-                if R[i][j] > 0:
-                    e = e + pow(R[i][j] - numpy.dot(P[i,:],Q[:,j]), 2)
-                    for k in xrange(K):
-                        e = e + (beta/2) * ( pow(P[i][k],2) + pow(Q[k][j],2) )
-        if e < 0.001:
-            break
-    return P, Q.T
-
-###############################################################################
+import pickle
 
 
 
-if __name__ == "__main__":
+
+def nrmf_test():
     n = 100
     l = 80
     #RB = bipartite.random_graph(n,l,0.2)
@@ -57,9 +35,54 @@ if __name__ == "__main__":
     r = 15
     
     F,G,R = nrmf.AltQP_Inc(injected_M,n,r,l)
-    test1.plotResidual(R,anomaly,n,r,l) 
+    plotResidual(R,anomaly,n,r,l) 
+    pickle.dump(RBM,open('synthetic/synth1.pkl','wb'))
+    pickle.dump(anomaly,open('synthetic/anomaly1.pkl','wb'))
+     
 
-    r = 50
+def plotResidual(R,anomaly,n,r,l):
+    plt.axis([0,l+1,0,n+1])
+    count = 0
+    acount = 0
+    #outfile = open(data_dir+'residuals2/R'+str(r)+'.csv','w')
+    #outfile2 = open(data_dir+'result2.csv','a')
+    for source in R:
+        source_list = []
+        target_list = []
+        anomaly_source_list = []
+        anomaly_target_list = []
+        for target in R[source]:
+            if R[source][target] > 0.00001:
+                count += 1
+                source_list.append(source)
+                target_list.append(target)
+                #outfile.write(str(source)+';'+str(target)+'\n')
+                if source in anomaly:
+                    if target in anomaly[source]:
+                        acount += 1
+                        print acount
+                        anomaly_source_list.append(source)
+                        anomaly_target_list.append(target)
+        #plt.plot(source_list, target_list, 'b.', markersize=0.5)
+        plt.plot(target_list, source_list, 'b.')
+        #plt.plot(anomaly_source_list, anomaly_target_list, 'r.', markersize=0.5)
+        plt.plot(anomaly_target_list, anomaly_source_list, 'r.')
+    #outfile.close()
+    plt.savefig('nrmf_vs_svd/nrmf.png')
+    
+    #outfile2.write(str(r)+';'+str(count)+';'+str(acount)+'\n')
+    #outfile2.close()
+    print r
+    print count
+    print acount
+
+
+
+def svd_test():
+    RBM = pickle.load(open('synthetic/synth1.pkl','rb'))
+    anomaly = pickle.load(open('synthetic/anomaly1.pkl','rb'))
+     
+    r = 70 
 
     #P = numpy.random.rand(n,r)
     #Q = numpy.random.rand(l,r)
@@ -85,7 +108,7 @@ if __name__ == "__main__":
         anomaly_source_list = []
         anomaly_target_list = []
         for col in range(len(residual[row])):
-            if abs(residual[row][col]) > 0.01 and RBM[row][col] != 0.0:
+            if abs(residual[row][col]) > 0.05 and RBM[row][col] != 0.0:
                 source_list.append(row)
                 target_list.append(col)
                 if row in anomaly:
@@ -95,3 +118,8 @@ if __name__ == "__main__":
         plt.plot(target_list, source_list, 'b.')
         plt.plot(anomaly_target_list, anomaly_source_list, 'r.')
     plt.savefig('nrmf_vs_svd/svd.png')
+
+
+if __name__ == "__main__":
+    #nrmf_test()
+    svd_test()
