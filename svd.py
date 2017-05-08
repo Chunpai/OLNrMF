@@ -94,4 +94,4 @@ if __name__ == "__main__":
                         anomaly_target_list.append(col)
         plt.plot(target_list, source_list, 'b.')
         plt.plot(anomaly_target_list, anomaly_source_list, 'r.')
-    plt.savefig('svd.png')
+    plt.savefig('nrmf_vs_svd/svd.png')
