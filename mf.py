@@ -11,6 +11,7 @@ from networkx.algorithms import bipartite
 import plot
 import test1
 import nrmf
+import numpy.linalg as LA
 
 def matrix_factorization(R, P, Q, K, steps=5000, alpha=0.0002, beta=0.02):
     Q = Q.T
@@ -53,19 +54,30 @@ if __name__ == "__main__":
 
     n = len(RBM)
     l = len(RBM[0])
-    r = 10
+    r = 15
     
     F,G,R = nrmf.AltQP_Inc(injected_M,n,r,l)
     test1.plotResidual(R,anomaly,n,r,l) 
 
+    r = 50
 
-    r = 2
+    #P = numpy.random.rand(n,r)
+    #Q = numpy.random.rand(l,r)
 
-    P = numpy.random.rand(n,r)
-    Q = numpy.random.rand(l,r)
+    U,s,V = LA.svd(RBM) 
+    print U.shape
+    print s.shape
+    print V.shape
 
-    nP, nQ = matrix_factorization(RBM, P, Q, r)
-    aR = numpy.dot(nP,nQ.T)
+    print U[:,:r].shape
+    print numpy.diag(s[:r]).shape
+    print V[:r,:].shape
+    print U[:,:r].dot(numpy.diag(s[:r])).shape
+    print U[:,:r].dot(numpy.diag(s[:r])).dot(V[:r,:]).shape
+    aR = U[:,:r].dot(numpy.diag(s[:r])).dot(V[:r,:])
+
+    #nP, nQ = matrix_factorization(RBM, P, Q, r)
+    #aR = numpy.dot(nP,nQ.T)
     residual = RBM - aR
     for row in range(len(residual)):
         source_list = []
@@ -73,7 +85,7 @@ if __name__ == "__main__":
         anomaly_source_list = []
         anomaly_target_list = []
         for col in range(len(residual[row])):
-            if abs(residual[row][col]) > 0.0001:
+            if abs(residual[row][col]) > 0.01 and RBM[row][col] != 0.0:
                 source_list.append(row)
                 target_list.append(col)
                 if row in anomaly:
@@ -82,4 +94,4 @@ if __name__ == "__main__":
                         anomaly_target_list.append(col)
         plt.plot(target_list, source_list, 'b.')
         plt.plot(anomaly_target_list, anomaly_source_list, 'r.')
-    plt.savefig('mf.png')
+    plt.savefig('svd.png')
