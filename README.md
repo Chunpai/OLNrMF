@@ -1,4 +1,5 @@
 ### To do list:          
+-1. apply NrMF on synthetic dataset
 0. implement NrMF on movie rating dataset       
 1. use the transition matrix rather than adjacency matrix     
 2. analysis of the distribution after each rank approximation     
@@ -13,6 +14,7 @@
 1. nrmf.py        - implementation of NrMF   
 2. olnrmf.py      - new       
 3. data.py        - read data, store with preferred format   
+4. mf.py          - matrix factorization based
 
 
 ### Datasets:

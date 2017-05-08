@@ -25,7 +25,7 @@ def plotNetwork(data_dir,M,anomaly,n,l):
 
  
 def plotResidual(data_dir,R,anomaly,n,r,l):
-    plt.axis([0,n+1,0,l+1])
+    plt.axis([0,l+1,0,n+1])
     count = 0
     acount = 0
     #outfile = open(data_dir+'residuals2/R'+str(r)+'.csv','w')
@@ -40,15 +40,18 @@ def plotResidual(data_dir,R,anomaly,n,r,l):
                 count += 1
                 source_list.append(source)
                 target_list.append(target)
-                outfile.write(str(source)+';'+str(target)+'\n')
+                #outfile.write(str(source)+';'+str(target)+'\n')
                 if source in anomaly:
                     if target in anomaly[source]:
                         acount += 1
+                        print acount
                         anomaly_source_list.append(source)
                         anomaly_target_list.append(target)
-        plt.plot(source_list, target_list, 'b.', markersize=0.5)
-        plt.plot(anomaly_source_list, anomaly_target_list, 'r.', markersize=0.5)
-    outfile.close()
+        #plt.plot(source_list, target_list, 'b.', markersize=0.5)
+        plt.plot(target_list, source_list, 'b.')
+        #plt.plot(anomaly_source_list, anomaly_target_list, 'r.', markersize=0.5)
+        plt.plot(anomaly_target_list, anomaly_source_list, 'r.')
+    #outfile.close()
     #plt.savefig(data_dir+'residuals2/R'+str(r)+'.png')
     plt.show()
     #outfile2.write(str(r)+';'+str(count)+';'+str(acount)+'\n')

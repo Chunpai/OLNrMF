@@ -41,6 +41,7 @@ def dataFormat2():
         fields = line.strip().split(',')
         userId = fields[0]
         movieId = fields[1]
+        rating = fields[2]
         if userId not in user_dict:
             userNewId = uindex
             user_dict[userId] = uindex
@@ -48,7 +49,7 @@ def dataFormat2():
         else:
             userNewId = user_dict[userId] 
         movieNewId = movie_dict[movieId]
-        outfile.write(str(userNewId)+';'+str(movieNewId)+'\n')
+        outfile.write(str(userNewId)+';'+str(movieNewId)+';'+str(rating)+'\n')
     infile.close()
     outfile.close()
 
@@ -142,7 +143,10 @@ def injectAnomalies(data_dir, M):
 
 
 
+
+
 if __name__ == '__main__':
+    '''
     data_dir = 'datasets/100_ml_ratings/'
     filename = '100_ml_ratings.csv' 
     M, count, source_dict, target_dict = readNetwork(data_dir,filename)
@@ -154,3 +158,5 @@ if __name__ == '__main__':
     #outfile = open(data_dir+'result2.csv','w')
     #outfile.write(str(count)+';'+str(acount)+'\n')
     #outfile.close()
+    '''
+    dataFormat2()

@@ -26,7 +26,7 @@ def initialization(n,r,l):
 
 
 
-def AltQP_Inc(M,n,r,l):
+def AltQP_Inc_General(M,n,r,l):
     """
     input: original n*l matrix A (here we use A_dict to represent matrix), and rank size r
     output: n*r matrix F, r*l matrix G, and an n*l matrix R
@@ -124,6 +124,7 @@ def Update_g(R,f,l):
         t = 0.0
         q = 0.0
         for source in R:   
+            print 'source',source
             f_value = f[source]
             if j in R[source]:   
                 if R[source][j] > 0.0:
