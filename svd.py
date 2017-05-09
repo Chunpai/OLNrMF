@@ -121,5 +121,5 @@ def svd_test():
 
 
 if __name__ == "__main__":
-    #nrmf_test()
-    svd_test()
+    nrmf_test()
+    #svd_test()

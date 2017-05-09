@@ -35,9 +35,11 @@ def readWeightedNetwork(data_dir, filename):
             count += 1
             M[source] = {}
             M[source][target] = weight
+            print 'weight',weight
         else:
             count += 1
             M[source][target] = weight
+            print 'weight', weight
     infile.close()
     print 'total edges', count
     print 'source', len(source_dict)
@@ -46,7 +48,9 @@ def readWeightedNetwork(data_dir, filename):
 
  
 def plotResidual(data_dir,R,anomaly,n,r,l):
-    plt.axis([0,l+1,0,n+1])
+    plt.axis([-1,l+1,-1,n+1])
+    plt.xlabel('movie')
+    plt.ylabel('user')
     count = 0
     acount = 0
     #outfile = open(data_dir+'residuals2/R'+str(r)+'.csv','w')
@@ -68,12 +72,13 @@ def plotResidual(data_dir,R,anomaly,n,r,l):
                         print acount
                         anomaly_source_list.append(source)
                         anomaly_target_list.append(target)
-        #plt.plot(source_list, target_list, 'b.', markersize=0.5)
-        plt.plot(target_list, source_list, 'b.')
+        plt.plot(source_list, target_list, 'b.', markersize=0.5)
+        #plt.plot(target_list, source_list, 'b.')
         #plt.plot(anomaly_source_list, anomaly_target_list, 'r.', markersize=0.5)
-        plt.plot(anomaly_target_list, anomaly_source_list, 'r.')
+        plt.plot(anomaly_target_list, anomaly_source_list, 'r.', markersize = 0.5)
     #outfile.close()
     #plt.savefig(data_dir+'residuals2/R'+str(r)+'.png')
+    #plt.savefig('res_rank30.png')
     plt.show()
     #outfile2.write(str(r)+';'+str(count)+';'+str(acount)+'\n')
     #outfile2.close()
@@ -92,7 +97,7 @@ def test5():
     print n
     l = len(movie_dict)
     print l
-    r = 30
+    r = 5
 
     plt.axis([-1,l+1,-1,n+1])
     plt.xlabel('movie')
@@ -104,7 +109,7 @@ def test5():
         for movie in M[user]:
             user_list.append(user)
             movie_list.append(movie)
-        plt.plot(movie_list, user_list, 'b.')
+        plt.plot(movie_list, user_list, 'b.', markersize = 0.5)
 
     injected_M = deepcopy(M)
     anomaly = {}
@@ -133,8 +138,10 @@ def test5():
         for target in anomaly[source]:
             source_list.append(source)
             target_list.append(target)
-        plt.plot(target_list, source_list, 'r.')
+        plt.plot(target_list, source_list, 'r.', markersize = 0.5)
+    #plt.savefig('full_rank30.png')
     plt.show()
+
     return M, anomaly, injected_M, n,r,l
 
 

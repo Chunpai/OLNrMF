@@ -56,7 +56,7 @@ def synth2(n,l):
                 source_list.append(row)
                 target_list.append(col)
                 rating = np.random.normal(3,1)
-                while rating > 4.5 or rating < 1.5:
+                while rating > 4.0 or rating < 2.0:
                     rating = np.random.normal(3,1)
                 if row not in M:
                     M[row] = {}
@@ -106,7 +106,9 @@ def synth2(n,l):
 
 
 def plotResidual(R,anomaly,n,r,l):
-    plt.axis([0,l+1,0,n+1])
+    plt.axis([-1,l+1,-1,n+1])
+    plt.xlabel('movie')
+    plt.ylabel('user')
     count = 0
     acount = 0
     for source in R:
@@ -144,7 +146,7 @@ def plotResidual(R,anomaly,n,r,l):
 def test2():
     n = 100
     l = 80
-    r = 17
+    r = 10
     M, anomaly, injected_M = synth2(n,l) 
     F,G,R = nrmf.AltQP_Inc(injected_M,n,r,l)
     plotResidual(R,anomaly,n,r,l) 
