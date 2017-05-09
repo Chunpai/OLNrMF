@@ -49,8 +49,8 @@ def readWeightedNetwork(data_dir, filename):
  
 def plotResidual(data_dir,R,anomaly,n,r,l):
     plt.axis([-1,l+1,-1,n+1])
-    plt.xlabel('movie')
-    plt.ylabel('user')
+    plt.xlabel('residual_movie')
+    plt.ylabel('residual_user')
     count = 0
     acount = 0
     #outfile = open(data_dir+'residuals2/R'+str(r)+'.csv','w')
@@ -72,7 +72,7 @@ def plotResidual(data_dir,R,anomaly,n,r,l):
                         print acount
                         anomaly_source_list.append(source)
                         anomaly_target_list.append(target)
-        plt.plot(source_list, target_list, 'b.', markersize=0.5)
+        plt.plot(target_list, source_list, 'b.', markersize=0.5)
         #plt.plot(target_list, source_list, 'b.')
         #plt.plot(anomaly_source_list, anomaly_target_list, 'r.', markersize=0.5)
         plt.plot(anomaly_target_list, anomaly_source_list, 'r.', markersize = 0.5)
